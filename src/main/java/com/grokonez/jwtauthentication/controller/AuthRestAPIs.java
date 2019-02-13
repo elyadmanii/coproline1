@@ -532,7 +532,7 @@ public class AuthRestAPIs {
         User superieur=sup.get();
 		User user = new User(signUpRequest.getName(),signUpRequest.getLastName(), signUpRequest.getUsername(), signUpRequest.getEmail(),
 				encoder.encode(signUpRequest.getPassword()));
-		user.setProfil("no-image.png");
+		user.setProfil("1000000.png");
 		Set<String> strRoles = signUpRequest.getRole();
 		Set<Role> roles = new HashSet<>();
 
