@@ -82,6 +82,7 @@ public class AuthRestAPIs {
 
 	@Autowired
 	AuthenticationManager authenticationManager;
+	//test comment
 
 	@Autowired
 	UserRepository userRepository;
