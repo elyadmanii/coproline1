@@ -11,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -65,6 +66,14 @@ public class User{
     private String password;
     
     private String profil;
+     
+    private String fileName;
+     
+    private String fileType;
+    
+    @Lob
+    @JsonIgnore
+    private byte[] data;
     
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -222,5 +231,31 @@ public class User{
 	public void setTacheEleves(Collection<TacheEleve> tacheEleves) {
 		this.tacheEleves = tacheEleves;
 	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	public String getFileType() {
+		return fileType;
+	}
+
+	public void setFileType(String fileType) {
+		this.fileType = fileType;
+	}
+
+	public byte[] getData() {
+		return data;
+	}
+
+	public void setData(byte[] data) {
+		this.data = data;
+	}
+	
+	
 	
 }

@@ -1,5 +1,6 @@
 package com.grokonez.jwtauthentication.controller;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import com.grokonez.jwtauthentication.security.services.DBFileStorageService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,6 +38,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import org.springframework.http.MediaType;
+import org.springframework.core.io.ByteArrayResource;
 
 import com.grokonez.jwtauthentication.message.request.GoupeForm;
 import com.grokonez.jwtauthentication.message.request.LoginForm;
@@ -47,6 +52,7 @@ import com.grokonez.jwtauthentication.message.response.InfosUser;
 import com.grokonez.jwtauthentication.message.response.JwtResponse;
 import com.grokonez.jwtauthentication.message.response.ResponseMessage;
 import com.grokonez.jwtauthentication.message.response.UserGroupes;
+import com.grokonez.jwtauthentication.model.DBFile;
 import com.grokonez.jwtauthentication.model.DocumentProjet;
 import com.grokonez.jwtauthentication.model.Groupe;
 import com.grokonez.jwtauthentication.model.GroupeUser;
@@ -125,27 +131,59 @@ public class AuthRestAPIs {
 	@Autowired
 	StorageService storageService;
 	
+	@Autowired
+    private DBFileStorageService DBFileStorageService;
+	
 	List<String> files = new ArrayList<String>();
 
 	
 	@PostMapping("/profile")
 	public void handleFileUpload(@RequestParam("file") MultipartFile file) {
-		//String message = "";
+		 
 		try {
 			
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			UserPrinciple userSup = (UserPrinciple)auth.getPrincipal();
 	        Optional<User> user=userRepository.findById(userSup.getId());
 	        User current=user.get();
-            storageService.store(file,current.getId());
-            current.setProfil(current.getId().toString()+".png");
-            userRepository.save(current);
-			
+	        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+	        
+	        try {
+	            if(fileName.contains("..")) {
+	                throw new Exception("Sorry! Filename contains invalid path sequence " + fileName);
+	            }
+	            current.setData(file.getBytes());
+	            current.setFileName(fileName);
+	            current.setFileType(file.getContentType()); 
+	            userRepository.save(current);
+ 
+	        } catch (IOException ex) {
+	            throw new Exception("Could not store file " + fileName + ". Please try again!", ex);
+	        }
+	         
 		} catch (Exception e) {
-			//message = "FAIL to upload " + file.getOriginalFilename() + "!";
-			//return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(message);
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
+	
+	@GetMapping("/downloadFile/{fileId}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable String fileId) { 
+        DBFile dbFile;
+		try {
+			dbFile = DBFileStorageService.getFile(fileId);
+			return ResponseEntity.ok()
+	                .contentType(MediaType.parseMediaType(dbFile.getFileType()))
+	                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + dbFile.getFileName() + "\"")
+	                .body(new ByteArrayResource(dbFile.getData()));
+			
+		} catch (Exception e) { 
+			e.printStackTrace();
+			return null;
+		}
+
+        
+    }
 	
 	@PostMapping("/production_tache")
 	public ProductionTache production_tache(@RequestParam("file") MultipartFile file,
@@ -157,9 +195,26 @@ public class AuthRestAPIs {
 			productionTache.setTache1(tacheRepository.findById(tache_id).get());
 			productionTache.setEleve(userRepository.findById(eleve_id).get());
 			productionTacheRepository.save(productionTache);
-			String doc=storageService.production(file,productionTache.getId());
+			//String doc=storageService.production(file,productionTache.getId());
 			productionTache.setDate(new Date());
-			productionTache.setDocument(doc);
+			//productionTache.setDocument(doc);
+			
+			
+			String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+	        
+	        try {
+	            if(fileName.contains("..")) {
+	                throw new Exception("Sorry! Filename contains invalid path sequence " + fileName);
+	            }
+	            productionTache.setData(file.getBytes());
+	            productionTache.setFileName(fileName);
+	            productionTache.setFileType(file.getContentType()); 
+	             
+	        } catch (IOException ex) {
+	            throw new Exception("Could not store file " + fileName + ". Please try again!", ex);
+	        }
+	        
+	        
 			productionTacheRepository.save(productionTache);
 			return productionTache;
 			
@@ -168,6 +223,9 @@ public class AuthRestAPIs {
 			//return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(message);
 			return new ProductionTache();
 		}
+		
+		
+		
 	}
 	
 	@PostMapping("/document_projet")
@@ -178,9 +236,26 @@ public class AuthRestAPIs {
 			DocumentProjet document=new DocumentProjet();
 			document.setProjet3(projetRepository.findById(projet_id).get()); 
 			documentProjetRepository.save(document);
-			String doc=storageService.document(file,document.getId());
-			document.setDocument(doc);
+			//String doc=storageService.document(file,document.getId());
+			//document.setDocument(doc);
 			documentProjetRepository.save(document);
+			
+			String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+	        
+	        try {
+	            if(fileName.contains("..")) {
+	                throw new Exception("Sorry! Filename contains invalid path sequence " + fileName);
+	            }
+	            document.setData(file.getBytes());
+	            document.setFileName(fileName);
+	            document.setDocument(fileName);
+	            document.setFileType(file.getContentType()); 
+	            documentProjetRepository.save(document);
+	             
+	        } catch (IOException ex) {
+	            throw new Exception("Could not store file " + fileName + ". Please try again!", ex);
+	        }
+	        
 			return document;
 			
 		} catch (Exception e) {
@@ -226,31 +301,67 @@ public class AuthRestAPIs {
 		return encoder.encode(password).equals(user.getPassword());
 	}
 	
-	@GetMapping("/files/{filename:.+}")
+	/*@GetMapping("/files/{filename:.+}")
 	@ResponseBody
 	public ResponseEntity<Resource> getFile(@PathVariable String filename) {
 		Resource file = storageService.loadFile(filename);
 		return ResponseEntity.ok()
 				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
 				.body(file);
+	}*/
+	
+	@GetMapping("/files/{id}")
+    public ResponseEntity<Resource> getFile(@PathVariable Long id) { 
+        User user = userRepository.getOne(id);
+        
+        if(user.getFileType()==null){
+        	user = userRepository.getOne(10000L);
+        }
+		
+        try { 
+			return ResponseEntity.ok()
+	                .contentType(MediaType.parseMediaType(user.getFileType()))
+	                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + user.getFileName() + "\"")
+	                .body(new ByteArrayResource(user.getData()));
+			
+		} catch (Exception e) { 
+			e.printStackTrace();
+			return null;
+		}
+    }
+	
+	@GetMapping("/docs/{id}")
+	@ResponseBody
+	public ResponseEntity<Resource> docs(@PathVariable Long id) {
+		DocumentProjet document = documentProjetRepository.getOne(id);
+		try { 
+			return ResponseEntity.ok()
+	                .contentType(MediaType.parseMediaType(document.getFileType()))
+	                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + document.getFileName() + "\"")
+	                .body(new ByteArrayResource(document.getData()));
+			
+		} catch (Exception e) { 
+			e.printStackTrace();
+			return null;
+		}
+		 
 	}
 	
-	@GetMapping("/docs/{filename:.+}")
+	@GetMapping("/production/{id}")
 	@ResponseBody
-	public ResponseEntity<Resource> docs(@PathVariable String filename) {
-		Resource file = storageService.loaddocs(filename);
-		return ResponseEntity.ok()
-				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
-				.body(file);
-	}
-	
-	@GetMapping("/production/{filename:.+}")
-	@ResponseBody
-	public ResponseEntity<Resource> production(@PathVariable String filename) {
-		Resource file = storageService.loadproduction(filename);
-		return ResponseEntity.ok()
-				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
-				.body(file);
+	public ResponseEntity<Resource> production(@PathVariable Long id) {
+		ProductionTache productionTache = productionTacheRepository.getOne(id);
+		try { 
+			return ResponseEntity.ok()
+	                .contentType(MediaType.parseMediaType(productionTache.getFileType()))
+	                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + productionTache.getFileName() + "\"")
+	                .body(new ByteArrayResource(productionTache.getData()));
+			
+		} catch (Exception e) { 
+			e.printStackTrace();
+			return null;
+		}
+		 
 	}
 
 	@PostMapping("/signin")

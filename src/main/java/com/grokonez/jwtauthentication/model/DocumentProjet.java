@@ -5,9 +5,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
@@ -21,6 +23,14 @@ public class DocumentProjet {
 	
 	private String document;
 	private String path;
+	 
+    private String fileName;
+     
+    private String fileType;
+    
+    @Lob
+    @JsonIgnore
+    private byte[] data;
 	
 	@ManyToOne
 	@JoinColumn(name="projet_id")
@@ -57,6 +67,31 @@ public class DocumentProjet {
 	public void setPath(String path) {
 		this.path = path;
 	}
+	
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	public String getFileType() {
+		return fileType;
+	}
+
+	public void setFileType(String fileType) {
+		this.fileType = fileType;
+	}
+
+	public byte[] getData() {
+		return data;
+	}
+
+	public void setData(byte[] data) {
+		this.data = data;
+	}
+	
 	
 	 
 }
