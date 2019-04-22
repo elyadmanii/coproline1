@@ -13,6 +13,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cascade;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -37,14 +39,17 @@ public class Tache {
 	@JoinColumn(name="phase_id")
  	private Phase phase;
 	
-	@OneToMany(mappedBy="tache",fetch=FetchType.LAZY)
+	@OneToMany(mappedBy="tache",fetch=FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
 	private Collection<SousTache> sousTaches;
 	
-	@OneToMany(mappedBy="tache1",fetch=FetchType.LAZY)
+	@OneToMany(mappedBy="tache1",fetch=FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
 	@JsonIgnore
 	private Collection<ProductionTache> productionTaches;
 	
-	@OneToMany(mappedBy="tache_eleve",fetch=FetchType.LAZY)
+	@OneToMany(mappedBy="tache_eleve",fetch=FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
     @JsonIgnore
 	private Collection<TacheEleve> tacheEleves;
 

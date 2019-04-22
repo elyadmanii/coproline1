@@ -1,5 +1,8 @@
 package com.grokonez.jwtauthentication.controller;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,14 +13,25 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.validation.Valid;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import com.grokonez.jwtauthentication.security.services.DBFileStorageService;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,16 +52,24 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
-import org.springframework.http.MediaType;
-import org.springframework.core.io.ByteArrayResource;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import com.grokonez.jwtauthentication.message.request.GoupeForm;
 import com.grokonez.jwtauthentication.message.request.LoginForm;
 import com.grokonez.jwtauthentication.message.request.PhaseForm;
+import com.grokonez.jwtauthentication.message.request.PhaseForm1;
 import com.grokonez.jwtauthentication.message.request.ProjetForm;
+import com.grokonez.jwtauthentication.message.request.ProjetGroupeForm;
 import com.grokonez.jwtauthentication.message.request.SignUpForm;
+import com.grokonez.jwtauthentication.message.request.SousTacheForm;
+import com.grokonez.jwtauthentication.message.request.TacheEleveForm;
 import com.grokonez.jwtauthentication.message.request.TacheForm;
+import com.grokonez.jwtauthentication.message.request.TacheForm1;
 import com.grokonez.jwtauthentication.message.response.GroupeUsers;
+import com.grokonez.jwtauthentication.message.response.InfosPhase;
+import com.grokonez.jwtauthentication.message.response.InfosTache;
 import com.grokonez.jwtauthentication.message.response.InfosUser;
 import com.grokonez.jwtauthentication.message.response.JwtResponse;
 import com.grokonez.jwtauthentication.message.response.ResponseMessage;
@@ -62,7 +84,9 @@ import com.grokonez.jwtauthentication.model.Projet;
 import com.grokonez.jwtauthentication.model.ProjetGroupe;
 import com.grokonez.jwtauthentication.model.Role;
 import com.grokonez.jwtauthentication.model.RoleName;
+import com.grokonez.jwtauthentication.model.SousTache;
 import com.grokonez.jwtauthentication.model.Tache;
+import com.grokonez.jwtauthentication.model.TacheEleve;
 import com.grokonez.jwtauthentication.model.User;
 import com.grokonez.jwtauthentication.repository.DocumentProjetRepository;
 import com.grokonez.jwtauthentication.repository.GroupeRepository;
@@ -72,9 +96,12 @@ import com.grokonez.jwtauthentication.repository.ProductionTacheRepository;
 import com.grokonez.jwtauthentication.repository.ProjetGroupeRepository;
 import com.grokonez.jwtauthentication.repository.ProjetRepository;
 import com.grokonez.jwtauthentication.repository.RoleRepository;
+import com.grokonez.jwtauthentication.repository.SousTacheRepository;
+import com.grokonez.jwtauthentication.repository.TacheEleveRepository;
 import com.grokonez.jwtauthentication.repository.TacheRepository;
 import com.grokonez.jwtauthentication.repository.UserRepository;
 import com.grokonez.jwtauthentication.security.jwt.JwtProvider;
+import com.grokonez.jwtauthentication.security.services.DBFileStorageService;
 import com.grokonez.jwtauthentication.security.services.UserPrinciple;
 import com.grokonez.jwtauthentication.services.SendMail;
 import com.grokonez.jwtauthentication.services.StorageService;
@@ -106,6 +133,10 @@ public class AuthRestAPIs {
 	TacheRepository tacheRepository;
 	
 	@Autowired
+	SousTacheRepository sousTacheRepository;
+	
+	
+	@Autowired
 	GroupeUserRepository groupeUserRepository;
 	
 	@Autowired
@@ -119,6 +150,11 @@ public class AuthRestAPIs {
 	
 	@Autowired
 	ProjetGroupeRepository projetGroupeRepository;
+	
+	@Autowired
+	TacheEleveRepository tacheEleveRepository;
+	
+	
 	
 	
 	 
@@ -411,6 +447,210 @@ public class AuthRestAPIs {
 		
 	}
 	
+	
+	
+	@PostMapping("/add_phase")
+	public ResponseEntity<?> add_phase(@Valid @RequestBody PhaseForm1 phase){
+		Projet p=projetRepository.findById(phase.getProjet()).get(); 
+     
+		Phase phase1=new Phase();
+		phase1.setNom(phase.getNom()); 
+        phase1.setDateDebut(phase.getDd());
+        phase1.setDateFin(phase.getDf());
+        phase1.setDescription(phase.getDescription());
+        phase1.setProjet2(p);
+        phaseRepository.save(phase1);
+         
+		return ResponseEntity.ok(new InfosPhase(phase1));
+	       
+	}
+	
+	@PostMapping("/update_phase")
+	public ResponseEntity<?> update_phase(@Valid @RequestBody PhaseForm1 phase){
+		
+		Phase phase1=phaseRepository.findById(phase.getProjet()).get();
+		phase1.setNom(phase.getNom()); 
+        phase1.setDateDebut(phase.getDd());
+        phase1.setDateFin(phase.getDf());
+        phase1.setDescription(phase.getDescription());
+        phaseRepository.save(phase1);
+        
+        return ResponseEntity.ok(new InfosPhase(phase1));
+        
+	}
+	
+	@PostMapping("/delete_phase")
+	public void delete_phase(@RequestParam("id") Long id) {
+		Phase phase=phaseRepository.findById(id).get();
+		phaseRepository.delete(phase); 
+	}
+	
+	@PostMapping("/delete_user")
+	public void delete_user(@RequestParam("id") Long id) {
+		User user=userRepository.findById(id).get();
+		userRepository.delete(user);  
+	}
+	
+	@PostMapping("/update_projet")
+	public void update_projet(@Valid @RequestBody PhaseForm1 phase){
+		
+		Projet p=projetRepository.findById(phase.getProjet()).get();
+		p.setNom(phase.getNom()); 
+        p.setDateDebut(phase.getDd());
+        p.setDateFin(phase.getDf());
+        p.setDescription(phase.getDescription());
+        projetRepository.save(p);
+         
+	}
+	
+	@PostMapping("/delete_projet")
+	public void delete_projet(@RequestParam("id") Long id) {
+		Projet p=projetRepository.findById(id).get();
+		projetRepository.delete(p); 
+	}
+	
+	@PostMapping("/tache_eleves")
+	public ResponseEntity<?> tache_eleves(@Valid @RequestBody TacheEleveForm tacheEleves) {
+		
+		
+		List<TacheEleve> tacheEleve =tacheEleveRepository.findAllByTache_eleve(tacheEleves.getTache());
+		System.out.println(tacheEleve.size());
+		for (Iterator iterator = tacheEleve.iterator(); iterator.hasNext();) {
+			TacheEleve tacheEleve2 = (TacheEleve) iterator.next();
+			System.out.println(tacheEleve2.getEleve_tache().getUsername());
+ 			tacheEleveRepository.delete(tacheEleve2);
+		} 
+		Tache tache=tacheRepository.getOne(tacheEleves.getTache());
+		
+		
+		System.out.println(tacheEleves.getEleves().size());
+		for (Long eleve : tacheEleves.getEleves()) {
+			System.out.println(eleve);
+			TacheEleve t_eleve=new TacheEleve();
+			User user=userRepository.getOne(eleve);
+			t_eleve.setEleve_tache(user);
+			t_eleve.setTache_eleve(tache);
+			tacheEleveRepository.save(t_eleve);
+			
+		}
+		
+		return ResponseEntity.ok(new InfosTache(tache)); 
+	}
+	 	
+		
+    @GetMapping("/get_tache_eleves/{id}")
+	public List<TacheEleve> get_tache_eleves(@PathVariable Long id) {
+		 
+		List<TacheEleve> tacheEleve =tacheEleveRepository.findAllByTache_eleve(id);
+		return tacheEleve;
+	}
+	
+	 
+	
+	
+	@PostMapping("/projet_groupes")
+	public void projet_groupes(@Valid @RequestBody ProjetGroupeForm pg ) {
+		
+		
+		Long projet = pg.getProjet();
+		List<Long> groupes_deleted = pg.getGroupes_deleted();
+		List<Long> groupes_added = pg.getGroupes_added();
+		
+		Projet p=projetRepository.findById(projet).get();
+	
+		for (int i = 0; i < groupes_deleted.size(); i++) {
+			List<ProjetGroupe> projetGroupes=projetGroupeRepository.findAllByProjet(p);
+			
+			for (Iterator iterator = projetGroupes.iterator(); iterator.hasNext();) {
+				ProjetGroupe projetGroupe = (ProjetGroupe) iterator.next();
+				if(projetGroupe.getGroupe().getId()==groupes_deleted.get(i)){
+					projetGroupeRepository.delete(projetGroupe);
+				}
+			}	
+		}
+		  
+		
+		for (int i = 0; i < groupes_added.size(); i++) {
+			ProjetGroupe projetGroupe =new ProjetGroupe();
+			Groupe g=groupeRepository.findById(groupes_added.get(i)).get();
+			projetGroupe.setGroupe(g);
+			projetGroupe.setProjet(p);
+			projetGroupeRepository.save(projetGroupe);
+		}
+	}
+	
+	
+	
+	@PostMapping("/add_tache")
+	public ResponseEntity<?> add_tache(@Valid @RequestBody TacheForm1 tache){
+
+		Phase phase=phaseRepository.findById(tache.getPhase()).get();
+		
+		Tache t=new Tache();
+		t.setNom(tache.getNom()); 
+        t.setDateDebut(tache.getDd());
+        t.setDateFin(tache.getDf());
+        t.setDescription(tache.getDescription());
+        t.setPhase(phase);
+        tacheRepository.save(t);
+         
+		return ResponseEntity.ok(new InfosTache(t));
+	       
+	}
+	
+	@PostMapping("/update_tache")
+	public ResponseEntity<?> update_tache(@Valid @RequestBody TacheForm1 tache){
+		
+		Tache t=tacheRepository.findById(tache.getPhase()).get();
+		t.setNom(tache.getNom()); 
+        t.setDateDebut(tache.getDd());
+        t.setDateFin(tache.getDf());
+        t.setDescription(tache.getDescription());
+        tacheRepository.save(t);
+        
+        return ResponseEntity.ok(new InfosTache(t));
+        
+	}
+	
+	@PostMapping("/delete_tache")
+	public void delete_tache(@RequestParam("id") Long id) {
+		Tache t=tacheRepository.findById(id).get();
+		tacheRepository.delete(t); 
+	}
+	
+	@PostMapping("/add_sous_tache")
+	public ResponseEntity<?> add_sous_tache(@Valid @RequestBody SousTacheForm sous_tache){
+
+		Tache tache=tacheRepository.findById(sous_tache.getTache()).get();
+		
+		SousTache t=new SousTache();
+		t.setNom(sous_tache.getNom());  
+        t.setDescription(sous_tache.getDescription());
+        t.setTache(tache);
+        sousTacheRepository.save(t);
+         
+		return ResponseEntity.ok(new InfosTache(tache));
+	       
+	}
+	
+	@PostMapping("/update_sous_tache")
+	public ResponseEntity<?> update_sous_tache(@Valid @RequestBody SousTacheForm sous_tache){
+		
+		SousTache t=sousTacheRepository.findById(sous_tache.getTache()).get();
+		t.setNom(sous_tache.getNom());  
+        t.setDescription(sous_tache.getDescription());
+        sousTacheRepository.save(t);
+        
+        return ResponseEntity.ok(new InfosTache(t.getTache()));
+        
+	}
+	
+	@PostMapping("/delete_sous_tache")
+	public void delete_sous_tache(@RequestParam("id") Long id) {
+		SousTache t=sousTacheRepository.findById(id).get();
+		sousTacheRepository.delete(t); 
+	}
+	
 	@PostMapping("/add_project")
 	public void add_project(@Valid @RequestBody ProjetForm projet){
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -460,6 +700,48 @@ public class AuthRestAPIs {
 			projetGroupeRepository.save(pg);
 		}
          
+	}
+	
+	
+	@PostMapping("/delete_groupe")
+	public void delete_groupe(@RequestParam("id") Long id) {
+		Groupe g=groupeRepository.findById(id).get();
+		groupeRepository.delete(g); 
+	}
+	
+	@PostMapping("/update_groupe")
+	public void update_groupe(@Valid @RequestBody GoupeForm groupe){
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		UserPrinciple userSup = (UserPrinciple)auth.getPrincipal();
+        Optional<User> user=userRepository.findById(userSup.getId());
+        User current=user.get();
+        
+        Groupe g=groupeRepository.findById(groupe.getId()).get(); 
+        g.setNom(groupe.getNom());  
+        groupeRepository.save(g);
+        
+        List<GroupeUser> groupes=groupeUserRepository.findAllByGroupe(groupe.getId());
+        
+        for (GroupeUser groupeUser : groupes) {
+        	groupeUserRepository.delete(groupeUser);
+		}
+        
+        List<Long> users=groupe.getUsers();
+        for (Iterator iterator = users.iterator(); iterator.hasNext();) {
+        	Long u = (Long) iterator.next();
+        	User user2=userRepository.getOne(u);
+			GroupeUser gu=new GroupeUser();
+			gu.setGroupe1(g);
+			gu.setUser1(user2);
+			if(u.equals(groupe.getCoordinateur())){
+				gu.setCoordinateur(true);
+			}else{
+				gu.setCoordinateur(false);
+			}
+			
+	        groupeUserRepository.save(gu); 
+		}
+          
 	}
 	
 	@PostMapping("/add_groupe")
@@ -585,6 +867,13 @@ public class AuthRestAPIs {
 		return eleves;
 	}
 	
+	@GetMapping("/liste_professeurs")
+	public List<User> liste_professeurs() {
+		return userRepository.getAllProfesseurs();
+	}
+	
+	
+	
 	@GetMapping("/all_users")
 	public List<User> all_users() {
         List<User> users=userRepository.findAll();
@@ -675,4 +964,184 @@ public class AuthRestAPIs {
 
 		return new ResponseEntity<>(new ResponseMessage("User registered successfully!"), HttpStatus.OK);
 	}
+	
+	@PostMapping("/add_professeur")
+	public ResponseEntity<?> add_professeur(@Valid @RequestBody SignUpForm signUpRequest) {
+		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+			return new ResponseEntity<>(new ResponseMessage("Erreur : username déjà utilisé !"),
+					HttpStatus.BAD_REQUEST);
+		}
+
+		if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+			return new ResponseEntity<>(new ResponseMessage("Erreur : email déjà utilisé !"),
+					HttpStatus.BAD_REQUEST);
+		}
+		 
+		User user = new User(signUpRequest.getName(),signUpRequest.getLastName(), signUpRequest.getUsername(), signUpRequest.getEmail(),
+				encoder.encode(signUpRequest.getPassword()));
+		user.setProfil("1000000.png");
+		Set<String> strRoles = signUpRequest.getRole();
+		Set<Role> roles = new HashSet<>();
+		
+		Role userRole = roleRepository.findByName(RoleName.ROLE_PROFESSEUR)
+				.orElseThrow(() -> new RuntimeException("Fail! -> Cause: User Role not find."));
+		roles.add(userRole);
+		 
+		user.setRoles(roles); 
+		userRepository.save(user);
+
+		return new ResponseEntity<>(new ResponseMessage("User registered successfully!"), HttpStatus.OK);
+	}
+	
+	
+	@PostMapping("/update_user")
+	public ResponseEntity<?> update_user(@Valid @RequestBody SignUpForm signUpRequest) {
+		 
+        User user = userRepository.findById(signUpRequest.getId()).get();
+        user.setLastName(signUpRequest.getLastName());
+        user.setName(signUpRequest.getName());
+        user.setUsername(signUpRequest.getUsername());
+        user.setEmail(signUpRequest.getEmail());
+        user.setPassword(encoder.encode(signUpRequest.getPassword())); 
+
+		userRepository.save(user);
+
+		return new ResponseEntity<>(new ResponseMessage("User registered successfully!"), HttpStatus.OK);
+	}
+	  
+	
+	@GetMapping("/exportProject/{id}")
+	@ResponseBody
+	public ResponseEntity<Resource> exportProject(@PathVariable Long id) {
+		Projet projet=projetRepository.findById(id).get();
+		generateXML(projet);
+		// XML
+		
+        List<DocumentProjet> files = (List<DocumentProjet>) projet.getDocumentProjets();
+        generateZIP(projet.getNom(), files);
+        
+        Resource file = storageService.loadFile("projet.zip");
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+				.body(file);
+	}
+	
+    public void generateZIP(String zipName, List<DocumentProjet> filesToAdd){
+        
+        byte[] buffer = new byte[1024];
+
+        try{
+        	String workingDir = System.getProperty("user.dir"); 
+			
+            FileOutputStream fos = new FileOutputStream(workingDir + File.separator + "projet.zip");
+            ZipOutputStream zos = new ZipOutputStream(fos);
+            
+            ZipEntry ze1 = new ZipEntry(zipName + ".xml");
+            zos.putNextEntry(ze1);
+            FileInputStream in1 = new FileInputStream(workingDir + File.separator + "filexml.xml");
+            int len1;
+            while ((len1 = in1.read(buffer)) > 0) {
+                    zos.write(buffer, 0, len1);
+            }
+            in1.close();
+            
+            for (int i = 0; i < filesToAdd.size(); i++) {
+            	DocumentProjet document=filesToAdd.get(i);
+            	FileOutputStream f = new FileOutputStream(workingDir + File.separator + document.getDocument());
+                f.write(document.getData());
+                f.close();
+                 
+                ZipEntry ze= new ZipEntry(document.getDocument());
+                zos.putNextEntry(ze);
+                FileInputStream in = new FileInputStream(workingDir + File.separator + document.getDocument());
+                int len;
+                while ((len = in.read(buffer)) > 0) {
+                        zos.write(buffer, 0, len);
+                }
+                in.close();
+            }
+            zos.closeEntry();
+
+            //remember close it
+            zos.close();
+
+        }catch(IOException ex){
+           ex.printStackTrace();
+        }
+        
+    }
+    
+	public void generateXML(Projet p){
+		
+		try {
+
+			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+
+			// root elements
+			Document doc = docBuilder.newDocument();
+			Element manifest = doc.createElement("manifest");
+			doc.appendChild(manifest);
+			
+			// staff elements
+			Element organizations = doc.createElement("organizations");
+			manifest.appendChild(organizations);
+			
+			Element title = doc.createElement("imsld:title");
+			title.appendChild(doc.createTextNode(p.getNom()));
+			organizations.appendChild(title);
+			
+			Element objectives = doc.createElement("imsld:learning-objectives");
+			organizations.appendChild(objectives);
+			
+			Element objectives_title = doc.createElement("imsld:title");
+			objectives.appendChild(objectives_title);
+			
+			Element components = doc.createElement("imsld:components");
+			organizations.appendChild(components);
+			
+			Element roles = doc.createElement("imsld:roles");
+			components.appendChild(roles);
+			
+			List<ProjetGroupe> projetGroupes=(List<ProjetGroupe>) p.getProjetGroupes();
+			
+			for (ProjetGroupe projetGroupe : projetGroupes) {
+				List<GroupeUser> groupeUsers=(List<GroupeUser>) projetGroupe.getGroupe().getGroupeUsers();
+				for (GroupeUser groupeUser : groupeUsers) {
+					Element learner = doc.createElement("imsld:learner");
+					roles.appendChild(learner);
+					
+					Element learner_title = doc.createElement("imsld:title");
+					learner_title.appendChild(doc.createTextNode(groupeUser.getUser1().getName()+" "+groupeUser.getUser1().getLastName()));
+					learner.appendChild(learner_title);
+					 
+				}
+			}
+			
+			Element staff = doc.createElement("imsld:staff");
+			roles.appendChild(staff);
+			
+			Element staff_title = doc.createElement("imsld:title");
+			staff_title.appendChild(doc.createTextNode(p.getProfesseur().getName()+" "+p.getProfesseur().getLastName()));
+			staff.appendChild(staff_title);
+			 
+
+			// write the content into xml file
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			DOMSource source = new DOMSource(doc);
+			String workingDir = System.getProperty("user.dir");
+			StreamResult result = new StreamResult(new File(workingDir + File.separator + "filexml.xml"));
+
+			transformer.transform(source, result);
+
+		  } catch (ParserConfigurationException pce) {
+			pce.printStackTrace();
+		  } catch (TransformerException tfe) {
+			tfe.printStackTrace();
+		  }
+
+	}
+	 
+	
 }

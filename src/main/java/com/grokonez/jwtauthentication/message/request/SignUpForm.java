@@ -5,6 +5,8 @@ import java.util.Set;
 import javax.validation.constraints.*;
 
 public class SignUpForm {
+	private Long id;
+	
     @NotBlank
     @Size(min = 3, max = 50)
     private String name;
@@ -75,5 +77,14 @@ public class SignUpForm {
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+	
     
 }

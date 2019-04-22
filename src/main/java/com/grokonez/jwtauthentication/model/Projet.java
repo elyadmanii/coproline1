@@ -14,6 +14,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.annotations.Cascade;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -41,19 +43,23 @@ public class Projet {
 	@JoinColumn(name="professeur_id")
 	private User professeur;
 	
-	@OneToMany(mappedBy="projet",fetch=FetchType.LAZY)
+	@OneToMany(mappedBy="projet",fetch=FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
 	@JsonIgnore
 	private Collection<ProjetGroupe> projetGroupes;
 	
-	@OneToMany(mappedBy="projet3",fetch=FetchType.LAZY)
+	@OneToMany(mappedBy="projet3",fetch=FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
 	@JsonIgnore
 	private Collection<DocumentProjet> documentProjets;
 	
-	@OneToMany(mappedBy="projet2",fetch=FetchType.LAZY)
+	@OneToMany(mappedBy="projet2",fetch=FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
 	@JsonIgnore
 	private Collection<Phase> phases;
 	
-	@OneToMany(mappedBy="projet4",fetch=FetchType.LAZY)
+	@OneToMany(mappedBy="projet4",fetch=FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
 	@JsonIgnore
 	private Collection<ProductionProjet> productionProjets;
 	

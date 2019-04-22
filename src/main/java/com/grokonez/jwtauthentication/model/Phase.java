@@ -1,5 +1,6 @@
 package com.grokonez.jwtauthentication.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
@@ -12,6 +13,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.Cascade;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -34,9 +37,10 @@ public class Phase {
 	@JoinColumn(name="projet_id")
 	private Projet projet2;
 	
-	@OneToMany(mappedBy="phase",fetch=FetchType.LAZY)
+	@OneToMany(mappedBy="phase",fetch=FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
 	@JsonIgnore
-	private Collection<Tache> taches;
+	private Collection<Tache> taches=new ArrayList<>();
 
 	public Long getId() {
 		return id;

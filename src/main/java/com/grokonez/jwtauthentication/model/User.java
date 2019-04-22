@@ -21,6 +21,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.OnDelete;
 
@@ -88,25 +89,30 @@ public class User{
     @JsonIgnore
 	private User userSuperieur;
     
-    @OneToMany(mappedBy="professeur",fetch=FetchType.LAZY)
+    @OneToMany(mappedBy="professeur",fetch=FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
     @JsonIgnore
 	private Collection<Projet> projets;
     
-    @OneToMany(mappedBy="userSuperieur",fetch=FetchType.LAZY)
+    @OneToMany(mappedBy="userSuperieur",fetch=FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
     @JsonIgnore
 	private Collection<User> eleves;
     
     
     
-    @OneToMany(mappedBy="user1",fetch=FetchType.LAZY)
+    @OneToMany(mappedBy="user1",fetch=FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
     @JsonIgnore
 	private Collection<GroupeUser> groupeUsers;
     
-    @OneToMany(mappedBy="eleve",fetch=FetchType.LAZY)
+    @OneToMany(mappedBy="eleve",fetch=FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
     @JsonIgnore
 	private Collection<ProductionTache> productionTaches;
     
-    @OneToMany(mappedBy="eleve_tache",fetch=FetchType.LAZY)
+    @OneToMany(mappedBy="eleve_tache",fetch=FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
     @JsonIgnore
 	private Collection<TacheEleve> tacheEleves;
 

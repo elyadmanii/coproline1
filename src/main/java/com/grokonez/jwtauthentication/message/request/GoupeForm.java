@@ -7,8 +7,11 @@ import javax.validation.constraints.NotBlank;
 
 public class GoupeForm {
     
+	
+	private Long id;
+	
 	@NotBlank
-    private String nom;
+	private String nom;
 	private Long coordinateur; 
     private List<Long> users=new ArrayList<>();
 	
@@ -29,6 +32,12 @@ public class GoupeForm {
 	}
 	public void setUsers(List<Long> users) {
 		this.users = users;
+	}
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
 	}
       
 }

@@ -12,6 +12,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cascade;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -31,19 +33,23 @@ public class Groupe {
 	@JsonIgnore
 	private User professeur;
 	
-	@OneToMany(mappedBy="groupe",fetch=FetchType.LAZY)
+	@OneToMany(mappedBy="groupe",fetch=FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
 	@JsonIgnore
 	private Collection<ProjetGroupe> projetGroupes;
 	
-	@OneToMany(mappedBy="groupe1",fetch=FetchType.LAZY)
+	@OneToMany(mappedBy="groupe1",fetch=FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
 	@JsonIgnore
 	private Collection<GroupeUser> groupeUsers;
 	
-	@OneToMany(mappedBy="groupe2",fetch=FetchType.LAZY)
+	@OneToMany(mappedBy="groupe2",fetch=FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
 	@JsonIgnore
 	private Collection<ProductionProjet> productionProjets;
 	
-	@OneToMany(mappedBy="groupe3",fetch=FetchType.LAZY)
+	@OneToMany(mappedBy="groupe3",fetch=FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL})
+	@Cascade({org.hibernate.annotations.CascadeType.ALL, org.hibernate.annotations.CascadeType.DELETE_ORPHAN})
 	@JsonIgnore
 	private Collection<ProductionTache> productionTaches;
 
