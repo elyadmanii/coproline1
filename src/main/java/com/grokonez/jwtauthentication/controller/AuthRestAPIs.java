@@ -887,17 +887,18 @@ public class AuthRestAPIs {
 											@RequestParam("lastName") String lastName,
 											@RequestParam("name") String name,
 											@RequestParam("username") String username,
+											@RequestParam("password") String password,
 											@RequestParam("id") Long id) {
 		
 		List<User> user=userRepository.findAll();
 		
 		for (Iterator iterator = user.iterator(); iterator.hasNext();) {
 			User user2 = (User) iterator.next();
-			if(user2.getId()!=id && user2.getEmail().equals(email)){
+			if(!user2.getId().equals(id) && user2.getEmail().equals(email)){
 				return new ResponseEntity<>(new ResponseMessage("Erreur : Email déjà utilisé !"),
 						HttpStatus.BAD_REQUEST);	
 			}
-			if(user2.getId()!=id && user2.getUsername().equals(username)){
+			if(!user2.getId().equals(id) && user2.getUsername().equals(username)){
 				return new ResponseEntity<>(new ResponseMessage("Erreur : Username déjà utilisé !"),
 						HttpStatus.BAD_REQUEST);	
 			}
@@ -909,6 +910,7 @@ public class AuthRestAPIs {
 		user1.setLastName(lastName);
 		user1.setName(name);
 		user1.setUsername(username);
+		user1.setPassword(encoder.encode(password)); 
 		userRepository.save(user1);
 		return new ResponseEntity<>(new ResponseMessage("User registered successfully!"), HttpStatus.OK);
 	}
