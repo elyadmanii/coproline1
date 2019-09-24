@@ -26,6 +26,8 @@ public class TacheEleve {
 	@ManyToOne
 	@JoinColumn(name="eleve_id")
  	private User eleve_tache;
+	
+	private String uuid;
 
 	public TacheEleve() {
 		super(); 
@@ -53,6 +55,14 @@ public class TacheEleve {
 
 	public void setEleve_tache(User eleve_tache) {
 		this.eleve_tache = eleve_tache;
+	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 
 }

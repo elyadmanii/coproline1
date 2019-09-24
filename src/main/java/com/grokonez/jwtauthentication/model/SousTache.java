@@ -27,6 +27,8 @@ public class SousTache {
 	@JsonIgnore
  	private Tache tache;
 
+	private String uuid;
+	
 	public Long getId() {
 		return id;
 	}
@@ -57,6 +59,14 @@ public class SousTache {
 
 	public void setTache(Tache tache) {
 		this.tache = tache;
+	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
    
 	

@@ -35,6 +35,8 @@ public class Tache {
 	private String document;
 	private Boolean complete;
 	
+	private String uuid;
+	
 	@ManyToOne
 	@JoinColumn(name="phase_id")
  	private Phase phase;
@@ -147,6 +149,14 @@ public class Tache {
 
 	public void setTacheEleves(Collection<TacheEleve> tacheEleves) {
 		this.tacheEleves = tacheEleves;
+	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 	  
 }

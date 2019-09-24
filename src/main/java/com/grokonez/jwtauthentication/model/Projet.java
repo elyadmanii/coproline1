@@ -39,6 +39,8 @@ public class Projet {
 	private Date dateDebut;
 	private Date dateFin;
 	
+	private String uuid;
+	
 	@ManyToOne
 	@JoinColumn(name="professeur_id")
 	private User professeur;
@@ -182,4 +184,14 @@ public class Projet {
 	public void setDateFin(Date dateFin) {
 		this.dateFin = dateFin;
 	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+	}
+	
+	
 }

@@ -76,6 +76,7 @@ public class User{
     @JsonIgnore
     private byte[] data;
     
+    private String uuid;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles", 
@@ -260,6 +261,14 @@ public class User{
 
 	public void setData(byte[] data) {
 		this.data = data;
+	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 	
 	

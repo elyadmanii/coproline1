@@ -28,6 +28,8 @@ public class Groupe {
 	
 	private String nom;
 	
+	private String uuid;
+	
 	@ManyToOne
 	@JoinColumn(name="professeur_id")
 	@JsonIgnore
@@ -108,5 +110,15 @@ public class Groupe {
 	public void setProfesseur(User professeur) {
 		this.professeur = professeur;
 	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+	}
+	
+	
 	 
 }

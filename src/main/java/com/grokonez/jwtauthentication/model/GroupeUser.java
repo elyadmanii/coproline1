@@ -29,7 +29,7 @@ public class GroupeUser {
 	@ManyToOne
 	@JoinColumn(name="user_id")
 	private User user1;
-
+	
 	public Long getId() {
 		return id;
 	}

@@ -33,6 +33,8 @@ public class Phase {
 	private Date dateDebut;
 	private Date dateFin;
 	
+	private String uuid;
+	
 	@ManyToOne
 	@JoinColumn(name="projet_id")
 	private Projet projet2;
@@ -96,6 +98,14 @@ public class Phase {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 	
 	

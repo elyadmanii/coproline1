@@ -29,6 +29,7 @@ public class ProductionTache {
      
     private String fileType;
     
+    private String uuid;
     @Lob
     @JsonIgnore
     private byte[] data;
@@ -115,6 +116,14 @@ public class ProductionTache {
 
 	public void setData(byte[] data) {
 		this.data = data;
+	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 	
 	

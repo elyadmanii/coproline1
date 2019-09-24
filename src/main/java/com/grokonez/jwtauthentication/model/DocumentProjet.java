@@ -28,6 +28,8 @@ public class DocumentProjet {
      
     private String fileType;
     
+    private String uuid;
+    
     @Lob
     @JsonIgnore
     private byte[] data;
@@ -90,6 +92,14 @@ public class DocumentProjet {
 
 	public void setData(byte[] data) {
 		this.data = data;
+	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 	
 	
