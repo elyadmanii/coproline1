@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -1197,6 +1198,7 @@ public class AuthRestAPIs {
 					Element play_title = doc.createElement("imsld:title");
 					play_title.appendChild(doc.createTextNode(phase.getNom()));
 					method_play.appendChild(play_title);
+					 
 
 					// tache
 					List<Tache> taches = (List<Tache>) phase.getTaches();
@@ -1212,7 +1214,7 @@ public class AuthRestAPIs {
 						Element tache_title = doc.createElement("imsld:title");
 						tache_title.appendChild(doc.createTextNode(t.getNom()));
 						tache.appendChild(tache_title);
-
+						 
 						// Sous tache
 						List<SousTache> sousTaches = (List<SousTache>) t.getSousTaches();
 						for (SousTache s : sousTaches) {
@@ -1231,7 +1233,15 @@ public class AuthRestAPIs {
 							sousTache.appendChild(role_ref);
 
 							Attr attr17 = doc.createAttribute("ref");
-							attr17.setValue("role-09efe22f-3911-0c06-9396-537a08eafbe5");
+							String uid="";
+							for (TacheEleve te : t.getTacheEleves()) {
+								if(te.getTache_eleve().getId()==t.getId()) {
+									uid=te.getEleve_tache().getUuid();
+									break;
+								}
+							}
+							
+							attr17.setValue("role-"+uid);
 							role_ref.setAttributeNode(attr17);
 
 							Element env_ref = doc.createElement("imsld:environment-ref");
@@ -1242,7 +1252,27 @@ public class AuthRestAPIs {
 							env_ref.setAttributeNode(attr18);
 
 						}
+						
+						Element tache_time = doc.createElement("imsld:complete-act");
+						tache.appendChild(tache_time);
+						
+						long diffIn = Math.abs(t.getDateFin().getTime() - t.getDateDebut().getTime());
+					    long task_days = TimeUnit.DAYS.convert(diffIn, TimeUnit.MILLISECONDS);
+					    
+						Element tache_time_days = doc.createElement("imsld:time-limit");
+						tache_time_days.appendChild(doc.createTextNode("P"+task_days+"D"));
+						tache_time.appendChild(tache_time_days);
 					}
+					
+					Element play_time = doc.createElement("imsld:complete-play");
+					method_play.appendChild(play_time);
+					
+					long diffInMillies = Math.abs(phase.getDateFin().getTime() - phase.getDateDebut().getTime());
+				    long play_days = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+				    
+					Element play_time_days = doc.createElement("imsld:time-limit");
+					play_time_days.appendChild(doc.createTextNode("P"+play_days+"D"));
+					play_time.appendChild(play_time_days);
 
 				}
 			}
