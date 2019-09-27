@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class StorageService {
  
 	Logger log = LoggerFactory.getLogger(this.getClass().getName());
-	private final Path rootLocation = Paths.get(System.getProperty("user.dir"));
+	private final Path rootLocation = Paths.get(System.getProperty("user.dir")+"home/coproline");
 	private final Path rootdocs = Paths.get("attachements");
 	private final Path production = Paths.get("production");
 	

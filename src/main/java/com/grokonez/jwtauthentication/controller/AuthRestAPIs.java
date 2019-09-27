@@ -1008,6 +1008,8 @@ public class AuthRestAPIs {
 
 		try {
 			String workingDir = System.getProperty("user.dir");
+			workingDir=workingDir+"/home/coproline";
+			System.out.println(workingDir);
 
 			FileOutputStream fos = new FileOutputStream(workingDir + File.separator + "projet.zip");
 			ZipOutputStream zos = new ZipOutputStream(fos);
@@ -1310,6 +1312,8 @@ public class AuthRestAPIs {
 			Transformer transformer = transformerFactory.newTransformer();
 			DOMSource source = new DOMSource(doc);
 			String workingDir = System.getProperty("user.dir");
+			workingDir=workingDir+"/home/coproline";
+			System.out.println(workingDir);
 			StreamResult result = new StreamResult(new File(workingDir + File.separator + "filexml.xml"));
 
 			transformer.transform(source, result);
